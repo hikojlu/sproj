@@ -16,6 +16,7 @@ COLUMNS = [
 if not os.path.exists(DB_NAME):
     with open(DB_NAME, 'w') as file:
         file.write("")
+        sql.connect(DB_NAME).cursor().execute(f"CREATE TABLE pupils({", ".join([e[0] for e in COLUMNS])})")
 
 db = sql.connect(DB_NAME)
 cur = db.cursor()

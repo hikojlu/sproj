@@ -7,9 +7,9 @@ DB_NAME = "pupils.sql"
 COLUMNS = [
     ("id", "Номер учня"),
     ("surname", "Прізвище"),
-    ("name", "Ім'я")
-    ("last_name", "По батькові")
-    ("class_number", "Клас")
+    ("name", "Ім'я"),
+    ("last_name", "По батькові"),
+    ("class_number", "Клас"),
     ("class_letter", "Паралель")
 ]
 

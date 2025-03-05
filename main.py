@@ -3,7 +3,7 @@ import sqlite3 as sql
 import tkinter as tk
 from tkinter import ttk
 
-from lib import Columns
+from lib import ColumnsWrapper
 
 DB_NAME = "pupils.sql"
 COLUMNS = ColumnsWrapper(

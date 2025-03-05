@@ -1,7 +1,10 @@
+import sqlite3 as sql
 import tkinter as tk
 from tkinter import ttk
 
-#relx rely relwidth relheight
+db = sql.connect("pupils.sql")
+cur = db.cursor()
+
 root = tk.Tk()
 root.geometry("500x500")
 root.title("hey")

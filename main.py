@@ -1,8 +1,15 @@
+import os
 import sqlite3 as sql
 import tkinter as tk
 from tkinter import ttk
 
-db = sql.connect("pupils.sql")
+DB_NAME = "pupils.sql"
+
+if not os.path.exists(DB_NAME):
+    with open(DB_NAME, 'w') as file:
+        file.write("")
+
+db = sql.connect(DB_NAME)
 cur = db.cursor()
 
 root = tk.Tk()

@@ -13,20 +13,24 @@ db = sql.connect(DB_NAME)
 cur = db.cursor()
 
 root = tk.Tk()
-root.geometry("500x500")
+root.geometry("700x500")
 root.title("hey")
 
-testtw = ttk.Treeview(root, columns=("t1", "t2"))
-testtw.heading("#0", text="test 0",)
-testtw.heading("t1", text="test 1")
-testtw.heading("t2", text="test 2")
+testtw = ttk.Treeview(root, columns=("class_number", "class_letter"))
+testtw.heading("#0", text="Прізвище, Ім'я",)
+testtw.heading("class_number", text="Клас")
+testtw.heading("class_letter", text="Клас (літера)")
 
-testtw.insert(
-    "",
-    tk.END,
-    text="keyvalue",
-    values=("test1value", "test2value")
-)
+data = cur.execute("""
+    SELECT full_name, class_number, class_letter FROM pupils ORDER BY full_name
+""")
+for row in data:
+    testtw.insert(
+        "",
+        tk.END,
+        text=row[0],
+        values=row[1:]
+    )
 
 testtw.place(relx=0.05, rely=0.05, relwidth=0.9, relheight=0.6)
 

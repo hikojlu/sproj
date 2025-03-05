@@ -27,8 +27,10 @@ root.title("hey")
 testtw = ttk.Treeview(root, 
     columns=(e[0] for e in COLUMNS[1:]))
 
-for col in COLUMNS:
-    testtw.heading(col[0], text=col[1])
+for i, col in enumerate(COLUMNS):
+    print(col)
+    testtw.heading("#0" if i == 0 else col[0],
+        text=col[1])
 
 data = cur.execute("""
     SELECT id, surname, name, last_name, class_number, class_letter FROM pupils ORDER BY id

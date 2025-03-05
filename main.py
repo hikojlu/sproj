@@ -31,13 +31,14 @@ for i, col in enumerate(COLUMNS):
     testtw.heading("#0" if i == 0 else col[0],
         text=col[1])
 
-data = cur.execute("""
-    SELECT id, surname, name, last_name, class_number, class_letter FROM pupils ORDER BY id
+data = cur.execute(f"""
+    SELECT {", ".join([e[0] for e in COLUMNS])} FROM pupils ORDER BY id
 """)
-for row in data:
-    testtw.insert(
+for i, row in enumerate(data):
+    id = testtw.insert(
         "",
         tk.END,
+        iid=i,
         text=row[0],
         values=row[1:]
     )

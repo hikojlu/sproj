@@ -1,4 +1,4 @@
-class Columns:
+class ColumnsWrapper:
     def __init__(self, *columns):
         self.columns = columns
         self.ids = [e[0] for e in columns]

@@ -2,6 +2,7 @@ import os
 import sqlite3 as sql
 import tkinter as tk
 from tkinter import ttk
+
 from lib import Columns
 
 DB_NAME = "pupils.sql"
@@ -17,7 +18,9 @@ COLUMNS = ColumnsWrapper(
 if not os.path.exists(DB_NAME):
     with open(DB_NAME, 'w') as file:
         file.write("")
-        sql.connect(DB_NAME).cursor().execute(f"CREATE TABLE pupils({", ".join(COLUMNS.ids)})")
+        sql.connect(DB_NAME).cursor().execute(f"""
+            CREATE TABLE pupils({", ".join(COLUMNS.ids)})
+        """)
 
 db = sql.connect(DB_NAME)
 cur = db.cursor()

@@ -5,7 +5,7 @@ from tkinter import ttk
 
 DB_NAME = "pupils.sql"
 COLUMNS = [
-    ("id", "Номер учня"),
+    ("id", "№"),
     ("surname", "Прізвище"),
     ("name", "Ім'я"),
     ("last_name", "По батькові"),

@@ -4,6 +4,7 @@ import tkinter as tk
 root = tk.Tk()
 
 root.geometry('500x500')
+root.title('hey')
 
 test = tk.Label(text = 'test')
 test.place(relx=0.1,rely=0.1,relwidth=0.5,relheight=0.2)

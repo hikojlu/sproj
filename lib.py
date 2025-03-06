@@ -17,7 +17,6 @@ class Table:
     def headings(self) -> None:
         #CRASHES! here at i=2
         for i, (col, display) in enumerate(self.columns.all):
-            
             self.table.heading(
                 "#0" if i == 0 else col,
                 text=display

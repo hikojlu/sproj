@@ -21,13 +21,16 @@ COLUMNS = Columns([
 def insert_to_db_gui(con: sql.Connection) -> None:
     def save(entries: list[(str, tk.Entry)]) -> None:
         data = [(col, e.get()) for col, e in entries]
+        to_insert = [tuple(e[1] for e in data),]
         # sqlite3 package docs recomend using 
         # `cur.executemany("INSERT INTO table VALUES(?, ?, <...>, ?)", (value, value, <...>, value))`
         # instead of f-strings to avoid sql injections
+        print(data)
+        print(to_insert)
         con.cursor().executemany(f"""
                 INSERT INTO pupils VALUES({", ".join(["?" for _ in range(COLUMNS.len)]) })
             """, 
-            data
+            to_insert
         )
         con.commit()
         gui.destroy()

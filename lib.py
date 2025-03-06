@@ -15,8 +15,9 @@ class Table:
         self.columns = columns
         self.table = Treeview(win, columns=columns)
     def headings(self) -> None:
+        #CRASHES! here at i=2
         for i, (col, display) in enumerate(self.columns.all):
-            print(i, col, display)
+            
             self.table.heading(
                 "#0" if i == 0 else col,
                 text=display

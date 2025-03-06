@@ -29,6 +29,7 @@ def insert_to_db_gui(db: sql.Connection) -> None:
             """, 
             data
         )
+        db.commit()
         gui.destroy()
             
     gui = tk.Tk()

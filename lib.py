@@ -1,6 +1,6 @@
-from tkinter import Tk
-from tkinter.ttk import Treeview
-from sqlite3 import Connection
+import tkinter as tk
+import sqlite3 as sql
+from tkinter import ttk
 
 class Columns:
     def __init__(self, columns: [(str, str)]):
@@ -10,15 +10,16 @@ class Columns:
         self.len = len(columns)
 
 class Table:
-    def __init__(self, win: Tk, columns: Columns, con: Connection):
+    def __init__(self, win: tk.Tk, columns: Columns, con: sql.Connection):
         self.win = win
         self.columns = columns
-        self.tview = Treeview(win, columns=self.columns.all)
+        self.tview = ttk.Treeview(win, columns=self.columns.ids)
 
         print(self.columns.all)
         for i, (col, display) in enumerate(self.columns.all):
             print(i, col, display)
-            self.tview.heading("#0" if i == 0 else col,
+            self.tview.heading(
+                "#0" if i == 0 else col,
                 text=display
             )
 

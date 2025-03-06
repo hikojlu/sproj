@@ -25,7 +25,7 @@ def insert_to_db_gui(con: sql.Connection) -> None:
         # `cur.executemany("INSERT INTO table VALUES(?, ?, <...>, ?)", (value, value, <...>, value))`
         # instead of f-strings to avoid sql injections
         con.cursor().executemany(f"""
-                INSERT INTO pupils VALUES({", ".join(["?" for _ in COLUMNS.len]) })
+                INSERT INTO pupils VALUES({", ".join(["?" for _ in range(COLUMNS.len)]) })
             """, 
             data
         )
@@ -69,12 +69,11 @@ root = tk.Tk()
 root.geometry("700x500")
 root.title("hey")
 
-# using `COLUMNS[1:]` because tkinter internally declares `#0`  heading
 pupils_table = Table(root, COLUMNS, con)
 
-pupils_table.table.place(relx=0.05, rely=0.05, relwidth=0.9, relheight=0.6)
+pupils_table.tview.place(relx=0.05, rely=0.05, relwidth=0.9, relheight=0.6)
 
-add_button = tk.Button(root, text='Додати учня', command=lambda: insert_to_con_gui(con))
+add_button = tk.Button(root, text='Додати учня', command=lambda: insert_to_db_gui(con))
 add_button.place(relx=0.05,rely=0.66,relwidth=0.15,relheight=0.1)
 
 root.mainloop()

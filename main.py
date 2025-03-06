@@ -3,17 +3,20 @@ import sqlite3 as sql
 import tkinter as tk
 from tkinter import ttk
 
-from lib import ColumnsWrapper
+from lib import (
+    Columns,
+    Table,
+)
 
 DB_NAME = "pupils.sql"
-COLUMNS = ColumnsWrapper(
+COLUMNS = Columns([
     ("id", "№"),
     ("surname", "Прізвище"),
     ("name", "Ім'я"),
     ("last_name", "По батькові"),
     ("class_number", "Клас"),
     ("class_letter", "Паралель"),
-)
+])
 
 def insert_to_db_gui(db: sql.Connection) -> None:
     def save(entries: list[(str, tk.Entry)]) -> None:
@@ -65,26 +68,11 @@ root = tk.Tk()
 root.geometry("700x500")
 root.title("hey")
 
-pupils_treeview = ttk.Treeview(root, 
-    columns=COLUMNS.ids[1:])
-
-for i, col in enumerate(COLUMNS.all):
-    pupils_treeview.heading("#0" if i == 0 else col[0],
-        text=col[1])
-
-data = cur.execute(f"""
-    SELECT {", ".join(COLUMNS.ids)} FROM pupils ORDER BY id
-""")
-for i, row in enumerate(data):
-    id = pupils_treeview.insert(
-        "",
-        tk.END,
-        iid=i,
-        text=row[0],
-        values=row[1:]
-    )
-
-pupils_treeview.place(relx=0.05, rely=0.05, relwidth=0.9, relheight=0.6)
+# using `COLUMNS[1:]` because tkinter internally declares `#0`  heading
+pupils_table = Table(root, Columns(COLUMNS.all[1:]))
+pupils_table.headings()
+pupils_table.load(db)
+pupils_table.table.place(relx=0.05, rely=0.05, relwidth=0.9, relheight=0.6)
 
 add_button = tk.Button(root, text='Додати учня', command=lambda: insert_to_db_gui(db))
 add_button.place(relx=0.05,rely=0.66,relwidth=0.15,relheight=0.1)

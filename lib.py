@@ -10,23 +10,23 @@ class Columns:
         self.len = len(columns)
 
 class Table:
-    def __init__(self, win: Tk, columns: Columns):
+    def __init__(self, win: Tk, columns: Columns, con: Connection):
         self.win = win
         self.columns = columns
-        self.table = Treeview(win, columns=columns)
-    def headings(self) -> None:
-        #CRASHES! here at i=2
+        self.tview = Treeview(win, columns=self.columns.all)
+
+        print(self.columns.all)
         for i, (col, display) in enumerate(self.columns.all):
-            self.table.heading(
-                "#0" if i == 0 else col,
+            print(i, col, display)
+            self.tview.heading("#0" if i == 0 else col,
                 text=display
             )
-    def load(self, db: Connection) -> None:
-        data = db.cursor().execute(f"""
+
+        data = con.cursor().execute(f"""
             SELECT {", ".join(self.columns.ids)} FROM pupils ORDER BY id
         """)
         for id, *rest in data:
-            self.table.insert(
+            self.tview.insert(
                 "",
                 tk.END,
                 iid=id,

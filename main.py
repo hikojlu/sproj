@@ -18,18 +18,18 @@ COLUMNS = Columns([
     ("class_letter", "Паралель"),
 ])
 
-def insert_to_db_gui(db: sql.Connection) -> None:
+def insert_to_db_gui(con: sql.Connection) -> None:
     def save(entries: list[(str, tk.Entry)]) -> None:
         data = [(col, e.get()) for col, e in entries]
         # sqlite3 package docs recomend using 
         # `cur.executemany("INSERT INTO table VALUES(?, ?, <...>, ?)", (value, value, <...>, value))`
         # instead of f-strings to avoid sql injections
-        db.cursor().executemany(f"""
+        con.cursor().executemany(f"""
                 INSERT INTO pupils VALUES({", ".join(["?" for _ in COLUMNS.len]) })
             """, 
             data
         )
-        db.commit()
+        con.commit()
         gui.destroy()
             
     gui = tk.Tk()
@@ -62,20 +62,19 @@ if not os.path.exists(DB_NAME):
             CREATE TABLE pupils({", ".join(COLUMNS.ids)})
         """)
 
-db = sql.connect(DB_NAME)
-cur = db.cursor()
+con = sql.connect(DB_NAME)
+cur = con.cursor()
 
 root = tk.Tk()
 root.geometry("700x500")
 root.title("hey")
 
 # using `COLUMNS[1:]` because tkinter internally declares `#0`  heading
-pupils_table = Table(root, Columns(COLUMNS.all[1:]))
-pupils_table.headings()
-pupils_table.load(db)
+pupils_table = Table(root, COLUMNS, con)
+
 pupils_table.table.place(relx=0.05, rely=0.05, relwidth=0.9, relheight=0.6)
 
-add_button = tk.Button(root, text='Додати учня', command=lambda: insert_to_db_gui(db))
+add_button = tk.Button(root, text='Додати учня', command=lambda: insert_to_con_gui(con))
 add_button.place(relx=0.05,rely=0.66,relwidth=0.15,relheight=0.1)
 
 root.mainloop()

@@ -12,17 +12,14 @@ class Columns:
         self.right = [e[1] for e in columns]
         self.len = len(columns)
         self.dict = { left: right for left, right in self.all}
-
 def select_db_gui() -> db.Connection:
     def q() -> str:
-        global bd_connection
+        global db_con
         filename = filedialog.askopenfilename()
-        bd_connection = db.connect(filename)
+        db_con = db.connect(filename)
         continue_button.config(state="normal")
 
         return filename
-
-    bd_connection = None 
     
     gui = tk.Tk()
     gui.title("Відкрити базу даних")
@@ -40,8 +37,7 @@ def select_db_gui() -> db.Connection:
     gui.protocol("WM_DELETE_WINDOW", exit)
     gui.mainloop()
 
-    return bd_connection
-
+    return db_con
 def add_pupil_gui(table: ttk.Treeview) -> None:
     def save() -> None:
         cyrillic = set("йцукенгшщзхїфівапролджєячсмитьбюЙЦУКЕНГШЩЗХЇФІВАПРОЛДЖЄЯЧСМИТЬБЮ-")
@@ -66,16 +62,6 @@ def add_pupil_gui(table: ttk.Treeview) -> None:
                     last_name
                     and set(last_name).issubset(cyrillic)
             ),
-            # ( "Номер класу має бути числом між 1 і 11",
-            #     lambda class_number:
-            #         class_number.isdigit() 
-            #         and (1 <= int(class_number) <= 11)
-            # ),
-            # ( "Паралель має бути одною великою буквою",
-            #     lambda class_letter:
-            #         len(class_letter) == 1 
-            #         and class_letter in "ЙЦУКЕНГШЩЗХЇФІВАПРОЛДЖЄЯЧСМИТЬБЮ"
-            # ),
         ]
 
         inputs = [(col, e.get().strip()) for col, e in entries]
@@ -123,9 +109,8 @@ def add_pupil_gui(table: ttk.Treeview) -> None:
     cancel_button.place(relx=0.1, rely=0.75, relwidth=0.35, relheight=0.15)
     
     gui.mainloop()
-
 def marks_gui(table: ttk.Treeview) -> None:
-    def choose(subject: str) -> None:
+    def load_subject(subject: str) -> None:
         marks.delete(*marks.get_children())
 
         data = db.get_marks(int(pupil["id"]), subject)
@@ -136,7 +121,6 @@ def marks_gui(table: ttk.Treeview) -> None:
                 text=date,
                 values=(mark,)
             )
-
     def exit() -> None:
         gui.destroy()
 
@@ -154,14 +138,12 @@ def marks_gui(table: ttk.Treeview) -> None:
     if not focus:
         return None
 
-    pupil = { 
-        "id": table.item(focus)["text"]
-    } | table.set(focus)
-    print(pupil)
+    pupil = { "id": table.item(focus)["text"] } | table.set(focus)
 
-    gui = tk.Tk()
-    gui.title(f"Оцінки учня {focus}")
-    gui.geometry("400x500")
+
+    gui = tk.Tk()#              >><< doesn't work
+    gui.title(f"Оцінки учня {table.get_children()[int(focus[0])]}")
+    gui.geometry("1000x500")
     gui.resizable(False, False)
 
     marks = ttk.Treeview(gui, columns=MARKS_COLUMNS.left[1:])
@@ -171,22 +153,18 @@ def marks_gui(table: ttk.Treeview) -> None:
             text=display,
         )
 
-    save_button = tk.Button(gui, text="Завершити")
-    cancel_button = tk.Button(gui, text="Відмінити", command=exit)
+    save_button = tk.Button(gui, text="Завершити", command=exit)
     
     subject_listbox = tk.Listbox(gui, selectmode="single")
     subject_listbox.insert(tk.END, *SUBJECTS)
-    choose_subject = tk.Button(gui, text="Обрати", 
-        command=lambda: choose(SUBJECTS[subject_listbox.curselection()[0]]))
+    load_subject_button = tk.Button(gui, text="Обрати", 
+        command=lambda: load_subject(SUBJECTS[subject_listbox.curselection()[0]]))
+    
+    marks.place(relx=0.6, rely=0.05, relwidth=0.3, relheight=0.75)
+    save_button.place(relx=0.6, rely=0.8, relwidth=0.3, relheight=0.1)
 
-    #тут треба ентрі і лейбли для ввода оцінок і дати, вписування цьой шляпи у `marks` і визвання неіснуючої функції на сейв у бд ++ лоад з бд при запуску цьой заулпи
-
-    subject_listbox.place(relx=0.1, rely=0.09, relwidth=0.35, relheight=0.1)
-    choose_subject.place(relx=0.55, rely=0.09, relwidth=0.35, relheight=0.1)
-
-    marks.place(relx=0.1, rely=0.3, relwidth=0.8, relheight=0.5)
-    save_button.place(relx=0.55, rely=0.85, relwidth=0.35, relheight=0.1)
-    cancel_button.place(relx=0.1, rely=0.85, relwidth=0.35, relheight=0.1)
+    subject_listbox.place(relx=0.05, rely=0.05, relwidth=0.3, relheight=0.75)
+    load_subject_button.place(relx=0.05, rely=0.8, relwidth=0.3, relheight=0.1)
     
     gui.mainloop()
 
@@ -196,6 +174,4 @@ COLUMNS = Columns([
     ("surname", "Прізвище"),
     ("name", "Ім'я"),
     ("last_name", "По батькові"),
-    # ("class_number", "Клас"),
-    # ("class_letter", "Паралель"),
 ])

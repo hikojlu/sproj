@@ -5,12 +5,12 @@ from tkinter import messagebox
 from tkinter import filedialog
 import db
 from columns import Columns
-            
-def select_db_gui() -> db.Connection:
+
+def select_db_gui() -> str:
+    filename = "foobar.db"
     def q() -> str:
-        global db_con
+        nonlocal filename
         filename = filedialog.askopenfilename()
-        db_con = db.connect(filename)
         continue_button.config(state="normal")
 
         return filename
@@ -31,15 +31,15 @@ def select_db_gui() -> db.Connection:
     gui.protocol("WM_DELETE_WINDOW", exit)
     gui.mainloop()
 
-    return db_con
-def add_pupil_gui(table: ttk.Treeview) -> None:
+    return filename
+def add_pupil_gui(con: db.Connection, table: ttk.Treeview) -> None:
     def save() -> None:
         cyrillic = set("йцукенгшщзхїфівапролджєячсмитьбюЙЦУКЕНГШЩЗХЇФІВАПРОЛДЖЄЯЧСМИТЬБЮ-")
         inputs_tests = [
             ( "Уведіть існуючий, доступний, коректний номер",
                 lambda id:
                     id.isdigit()
-                    and db.id_is_unique(int(id))
+                    and con.id_is_unique(int(id))
             ),    
             ( "Неможливо прочитати прізвище",
                 lambda surname:
@@ -65,7 +65,7 @@ def add_pupil_gui(table: ttk.Treeview) -> None:
                 messagebox.showerror(f"Помикла у `{col}`", err_msg)
                 return None
 
-        db.add_pupil(Columns(inputs))
+        con.add_pupil(Columns(inputs))
         write(table, Columns(inputs))
         exit()
     
@@ -103,11 +103,11 @@ def add_pupil_gui(table: ttk.Treeview) -> None:
     cancel_button.place(relx=0.1, rely=0.75, relwidth=0.35, relheight=0.15)
     
     gui.mainloop()
-def marks_gui(table: ttk.Treeview) -> None:
+def marks_gui(con: db.Connection, table: ttk.Treeview) -> None:
     def load_subject(subject: str) -> None:
         marks.delete(*marks.get_children())
 
-        data = db.get_marks(int(pupil["id"]), subject)
+        data = con.get_marks(int(pupil["id"]), subject)
         for date, mark in data:
             marks.insert(
                 parent="",
@@ -136,7 +136,7 @@ def marks_gui(table: ttk.Treeview) -> None:
 
     gui = tk.Tk()
     gui.title(f"Оцінки учня {pupil["surname"]} {pupil["name"]} {pupil["last_name"]}")
-    gui.geometry("1000x500")
+    gui.geometry("1000x470")
     gui.resizable(False, False)
 
     marks = ttk.Treeview(gui, columns=MARKS_COLUMNS.left[1:])
@@ -153,11 +153,11 @@ def marks_gui(table: ttk.Treeview) -> None:
     load_subject_button = tk.Button(gui, text="Обрати", 
         command=lambda: load_subject(SUBJECTS[subject_listbox.curselection()[0]]))
     
-    marks.place(relx=0.6, rely=0.05, relwidth=0.3, relheight=0.75)
-    save_button.place(relx=0.6, rely=0.8, relwidth=0.3, relheight=0.1)
+    marks.place(relx=0.75, rely=0.05, relwidth=0.2, relheight=0.75)
+    save_button.place(relx=0.75, rely=0.82, relwidth=0.2, relheight=0.1)
 
     subject_listbox.place(relx=0.05, rely=0.05, relwidth=0.2, relheight=0.75)
-    load_subject_button.place(relx=0.05, rely=0.8, relwidth=0.3, relheight=0.1)
+    load_subject_button.place(relx=0.05, rely=0.82, relwidth=0.2, relheight=0.1)
     
     gui.mainloop()
 

@@ -4,14 +4,8 @@ from tkinter import ttk
 from tkinter import messagebox
 from tkinter import filedialog
 import db
-
-class Columns:
-    def __init__(self, columns: [(str, str)]):
-        self.all = columns
-        self.left = [e[0] for e in columns]
-        self.right = [e[1] for e in columns]
-        self.len = len(columns)
-        self.dict = { left: right for left, right in self.all}
+from columns import Columns
+            
 def select_db_gui() -> db.Connection:
     def q() -> str:
         global db_con
@@ -71,7 +65,7 @@ def add_pupil_gui(table: ttk.Treeview) -> None:
                 messagebox.showerror(f"Помикла у `{col}`", err_msg)
                 return None
 
-        db.add_pupil(inputs)
+        db.add_pupil(Columns(inputs))
         write(table, Columns(inputs))
         exit()
     
@@ -124,6 +118,10 @@ def marks_gui(table: ttk.Treeview) -> None:
     def exit() -> None:
         gui.destroy()
 
+    focus = table.focus()
+    if not focus:
+        return None
+
     MARKS_COLUMNS = Columns([
         ("date", "Дата"),
         ("mark", "Оцінка"),
@@ -134,15 +132,10 @@ def marks_gui(table: ttk.Treeview) -> None:
         "Історія України",
     ]
 
-    focus = table.focus()
-    if not focus:
-        return None
-
     pupil = { "id": table.item(focus)["text"] } | table.set(focus)
 
-
-    gui = tk.Tk()#              >><< doesn't work
-    gui.title(f"Оцінки учня {table.get_children()[int(focus[0])]}")
+    gui = tk.Tk()
+    gui.title(f"Оцінки учня {pupil["surname"]} {pupil["name"]} {pupil["last_name"]}")
     gui.geometry("1000x500")
     gui.resizable(False, False)
 
@@ -163,7 +156,7 @@ def marks_gui(table: ttk.Treeview) -> None:
     marks.place(relx=0.6, rely=0.05, relwidth=0.3, relheight=0.75)
     save_button.place(relx=0.6, rely=0.8, relwidth=0.3, relheight=0.1)
 
-    subject_listbox.place(relx=0.05, rely=0.05, relwidth=0.3, relheight=0.75)
+    subject_listbox.place(relx=0.05, rely=0.05, relwidth=0.2, relheight=0.75)
     load_subject_button.place(relx=0.05, rely=0.8, relwidth=0.3, relheight=0.1)
     
     gui.mainloop()

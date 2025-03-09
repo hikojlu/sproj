@@ -6,9 +6,7 @@ def connect(filename) -> Connection:
 #TODO
 def id_is_unique(id: int) -> bool:
     return True
-#TODO
-def get_full_name(id: int) -> (str, str, str):
-    return (f"surname-{id}", "name", "last name")
+
 #TODO
 def add_pupil(pupil) -> None:
     print(pupil)

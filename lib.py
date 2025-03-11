@@ -104,17 +104,26 @@ def add_pupil_gui(con: db.Connection, table: ttk.Treeview) -> None:
     
     gui.mainloop()
 def marks_gui(con: db.Connection, table: ttk.Treeview) -> None:
-    def load_subject(subject: str) -> None:
-        marks.delete(*marks.get_children())
+    def choose(subject: str):
+        def load_subject(subject: str) -> None:
+            marks.delete(*marks.get_children())
 
-        data = con.get_marks(int(pupil["id"]), subject)
-        for date, mark in data:
-            marks.insert(
-                parent="",
-                index=tk.END,
-                text=date,
-                values=(mark,)
-            )
+            data = con.get_marks(int(pupil["id"]), subject)
+            for date, mark in data.all:
+                marks.insert(
+                    parent="",
+                    index=tk.END,
+                    text=date,
+                    values=(mark,)
+                )
+        def _choose(subject: str) -> None:
+            add_marks_button.config(state="normal")
+            gen_label.config(text=f"Оцінки учня {pupil["surname"]} {pupil["name"]} {pupil["last_name"]} з {subject}")
+        load_subject(subject)
+        _choose(subject)
+    def save() -> None:
+        #TODO
+        ...
     def exit() -> None:
         gui.destroy()
 
@@ -135,7 +144,7 @@ def marks_gui(con: db.Connection, table: ttk.Treeview) -> None:
     pupil = { "id": table.item(focus)["text"] } | table.set(focus)
 
     gui = tk.Tk()
-    gui.title(f"Оцінки учня {pupil["surname"]} {pupil["name"]} {pupil["last_name"]}")
+    gui.title(f"Оцінки учня {pupil["surname"]} {pupil["name"]} {pupil["last_name"]} з <предмет не обрано>")
     gui.geometry("1000x470")
     gui.resizable(False, False)
 
@@ -146,15 +155,32 @@ def marks_gui(con: db.Connection, table: ttk.Treeview) -> None:
             text=display,
         )
 
-    save_button = tk.Button(gui, text="Завершити", command=exit)
+    done_button = tk.Button(gui, text="Завершити", command=exit)
     
     subject_listbox = tk.Listbox(gui, selectmode="single")
     subject_listbox.insert(tk.END, *SUBJECTS)
     load_subject_button = tk.Button(gui, text="Обрати", 
-        command=lambda: load_subject(SUBJECTS[subject_listbox.curselection()[0]]))
+        command=lambda: choose(SUBJECTS[subject_listbox.curselection()[0]]))
     
-    marks.place(relx=0.75, rely=0.05, relwidth=0.2, relheight=0.75)
-    save_button.place(relx=0.75, rely=0.82, relwidth=0.2, relheight=0.1)
+    gen_label = tk.Label(gui, text=f"Додати оцінки для:\n{pupil["surname"]} {pupil["name"]} {pupil["last_name"]}")
+
+    date_label = tk.Label(gui, text="Дата")
+    mark_label = tk.Label(gui, text="Оцінка")
+
+    date_entry = tk.Entry(gui)
+    mark_entry = tk.Entry(gui)
+
+    add_marks_button = tk.Button(gui, text="Додати", command=save, state="disabled")
+
+    gen_label.place(relx=0.3, rely=0.05, relwidth=0.3, relheight=0.2)
+    date_label.place(relx=0.3, rely=0.3, relwidth=0.14, relheight=0.1)
+    date_entry.place(relx=0.45, rely=0.3, relwidth=0.14, relheight=0.1)
+    mark_label.place(relx=0.3, rely=0.42, relwidth=0.14, relheight=0.1)
+    mark_entry.place(relx=0.45, rely=0.42, relwidth=0.14, relheight=0.1)
+    add_marks_button.place(relx=0.3, rely=0.53, relwidth=0.3, relheight=0.1)
+
+    marks.place(relx=0.7, rely=0.05, relwidth=0.25, relheight=0.75)
+    done_button.place(relx=0.75, rely=0.82, relwidth=0.2, relheight=0.1)
 
     subject_listbox.place(relx=0.05, rely=0.05, relwidth=0.2, relheight=0.75)
     load_subject_button.place(relx=0.05, rely=0.82, relwidth=0.2, relheight=0.1)

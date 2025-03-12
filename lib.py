@@ -4,7 +4,7 @@ from tkinter import ttk
 from tkinter import messagebox
 from tkinter import filedialog
 import db
-from columns import Columns
+from columns import Columns, COLUMNS
 
 def select_db_gui() -> str:
     filename = "foobar.db"
@@ -32,7 +32,7 @@ def select_db_gui() -> str:
     gui.mainloop()
 
     return filename
-def add_pupil_gui(con: db.Connection, table: ttk.Treeview) -> None:
+def add_pupil_gui(con: db.Con, table: ttk.Treeview) -> None:
     def save() -> None:
         cyrillic = set("йцукенгшщзхїфівапролджєячсмитьбюЙЦУКЕНГШЩЗХЇФІВАПРОЛДЖЄЯЧСМИТЬБЮ-")
         inputs_tests = [
@@ -103,8 +103,11 @@ def add_pupil_gui(con: db.Connection, table: ttk.Treeview) -> None:
     cancel_button.place(relx=0.1, rely=0.75, relwidth=0.35, relheight=0.15)
     
     gui.mainloop()
-def marks_gui(con: db.Connection, table: ttk.Treeview) -> None:
+def marks_gui(con: db.Con, table: ttk.Treeview) -> None:
+    CURSUBJECT = None
     def choose(subject: str):
+        nonlocal CURSUBJECT
+        CURSUBJECT = subject
         def load_subject(subject: str) -> None:
             marks.delete(*marks.get_children())
 
@@ -118,12 +121,20 @@ def marks_gui(con: db.Connection, table: ttk.Treeview) -> None:
                 )
         def _choose(subject: str) -> None:
             add_marks_button.config(state="normal")
-            gen_label.config(text=f"Оцінки учня {pupil["surname"]} {pupil["name"]} {pupil["last_name"]} з {subject}")
+            gen_label.config(text=f"Оцінки учня\n{pupil["surname"]} {pupil["name"]} {pupil["last_name"]}\nз {subject}")
+            gui.title(f"Оцінки учня {pupil["surname"]} {pupil["name"]} {pupil["last_name"]} з {subject}")
         load_subject(subject)
         _choose(subject)
-    def save() -> None:
-        #TODO
-        ...
+    def save(data: Columns) -> None:
+        con.add_mark(pupil["id"], CURSUBJECT, data.left[0], data.right[0])
+        for date, mark in data.all:
+                marks.insert(
+                    parent="",
+                    index=tk.END,
+                    text=date,
+                    values=(mark,)
+                )
+        
     def exit() -> None:
         gui.destroy()
 
@@ -170,7 +181,8 @@ def marks_gui(con: db.Connection, table: ttk.Treeview) -> None:
     date_entry = tk.Entry(gui)
     mark_entry = tk.Entry(gui)
 
-    add_marks_button = tk.Button(gui, text="Додати", command=save, state="disabled")
+    add_marks_button = tk.Button(gui, text="Додати", 
+        command=lambda: save(Columns([(date_entry.get(), mark_entry.get())])), state="disabled")
 
     gen_label.place(relx=0.3, rely=0.05, relwidth=0.3, relheight=0.2)
     date_label.place(relx=0.3, rely=0.3, relwidth=0.14, relheight=0.1)
@@ -186,11 +198,3 @@ def marks_gui(con: db.Connection, table: ttk.Treeview) -> None:
     load_subject_button.place(relx=0.05, rely=0.82, relwidth=0.2, relheight=0.1)
     
     gui.mainloop()
-
-global COLUMNS 
-COLUMNS = Columns([
-    ("id", "№"),
-    ("surname", "Прізвище"),
-    ("name", "Ім'я"),
-    ("last_name", "По батькові"),
-])

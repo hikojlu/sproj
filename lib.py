@@ -24,7 +24,7 @@ SUBJECTS = sorted([
     "Мистецтво",
     "Інформатика",
     "Технології",
-    "Фіична культура",
+    "Фізична культура",
 ])
 
 def select_db_gui() -> str:
@@ -214,12 +214,48 @@ def marks_gui(con: db.Con, table: ttk.Treeview) -> None:
     
     gui.mainloop()
 def rating_gui(con: db.Con) -> None:
+    def load(subject: str) -> None:
+        table.delete(*table.get_children())
+        for id in con.get_all_ids():
+            marks = con.get_marks(id, subject).right
+            try:
+                avg = sum(marks) / len(marks)
+            except ZeroDivisionError:
+                continue
+            name = " ".join(con.get_name(id))
+            table.insert(
+                parent="",
+                index=tk.END,
+                text=id,
+                values=(name, f"{avg:.2f}")
+            )
+
     gui = tk.Tk()
     gui.title("Успішність")
     gui.geometry("1000x470")
     gui.resizable(False, False)
 
-    ttk.Treeview(gui, columns=())
+    columns = Columns([
+        ("id", "№"),
+        ("full_name", "Повне ім'я"),
+        ("avg", "Середня оцінка")
+    ])
+
+    table = ttk.Treeview(gui, columns=columns.left[1:])
+    for i, (col, display) in enumerate(columns.all):
+        table.heading(
+            "#0" if i == 0 else col,
+            text=display,
+        )
+    table.place(relx=0.25, rely=0.05, relwidth=0.72, relheight=0.92)
+
+    subject_listbox = tk.Listbox(gui, selectmode="single")
+    subject_listbox.insert(tk.END, *SUBJECTS)
+    subject_listbox.place(relx=0.02, rely=0.05, relwidth=0.2, relheight=0.6)
+
+    load_subject_button = tk.Button(gui, text="Обрати", 
+        command=lambda: load(SUBJECTS[subject_listbox.curselection()[0]]))
+    load_subject_button.place(relx=0.02, rely=0.66, relwidth=0.2, relheight=0.1)
 
     gui.mainloop()
 

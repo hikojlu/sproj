@@ -31,6 +31,8 @@ class Con:
         """, (pupil_id, subject, date, mark))
         self.con.commit()
 
+    def get_all_ids(self) -> [int]:
+        return [e[0] for e in self.con.cursor().execute("SELECT id FROM pupils").fetchall()]
     def get_pupils(self) -> list[Columns]:
         data = self.con.cursor().execute("SELECT * FROM pupils").fetchall()
 
@@ -39,11 +41,12 @@ class Con:
             ("surname", surname),
             ("name", name),
             ("last_name", last_name),
-             ])
-            for id, surname, name, last_name in data]
+        ]) for id, surname, name, last_name in data]
     def get_marks(self, pupil_id: int, subject: str) -> Columns:
 
         data = self.con.cursor().execute("""
             SELECT date, mark FROM marks WHERE id = ? AND subject = ?
         """, (pupil_id, subject)).fetchall()
         return Columns(data)
+    def get_name(self, id: int) -> str:
+        return (self.con.cursor().execute("SELECT surname, name, last_name FROM pupils WHERE id = ?", (id,)).fetchall()[0])

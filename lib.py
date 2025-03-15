@@ -133,8 +133,7 @@ def marks_gui(con: db.Con, table: ttk.Treeview) -> None:
                     index=tk.END,
                     text=date,
                     values=(mark,)
-                )
-        
+                )     
     def exit() -> None:
         gui.destroy()
 
@@ -198,3 +197,5 @@ def marks_gui(con: db.Con, table: ttk.Treeview) -> None:
     load_subject_button.place(relx=0.05, rely=0.82, relwidth=0.2, relheight=0.1)
     
     gui.mainloop()
+def rating_gui(con: db.Con) -> None:
+    ...

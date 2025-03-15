@@ -214,8 +214,9 @@ def marks_gui(con: db.Con, table: ttk.Treeview) -> None:
     
     gui.mainloop()
 def rating_gui(con: db.Con) -> None:
-    def load(subject: str) -> None:
+    def load(subject: str, sort: bool) -> None:
         table.delete(*table.get_children())
+        data: [(int, str, int)] = []
         for id in con.get_all_ids():
             marks = con.get_marks(id, subject).right
             try:
@@ -223,11 +224,17 @@ def rating_gui(con: db.Con) -> None:
             except ZeroDivisionError:
                 continue
             name = " ".join(con.get_name(id))
+            data.append((id, name, avg))
+
+        if sort:
+            data.sort(key=(lambda x: x[2]), reverse=True)
+
+        for id, name, mark in data:
             table.insert(
                 parent="",
                 index=tk.END,
                 text=id,
-                values=(name, f"{avg:.2f}")
+                values=(name, f"{mark:.2f}")
             )
 
     gui = tk.Tk()
@@ -254,8 +261,12 @@ def rating_gui(con: db.Con) -> None:
     subject_listbox.place(relx=0.02, rely=0.05, relwidth=0.2, relheight=0.6)
 
     load_subject_button = tk.Button(gui, text="Обрати", 
-        command=lambda: load(SUBJECTS[subject_listbox.curselection()[0]]))
+        command=lambda: load(SUBJECTS[subject_listbox.curselection()[0]], sort=sort_var.get()))
     load_subject_button.place(relx=0.02, rely=0.66, relwidth=0.2, relheight=0.1)
+
+    sort_var = tk.IntVar(gui, value=0)
+    sort_cb = tk.Checkbutton(gui, text='Сортувати', variable=sort_var, onvalue=1, offvalue=0)
+    sort_cb.place(relx=0.02, rely=0.8, relwidth=0.2, relheight=0.1)
 
     gui.mainloop()
 

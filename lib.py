@@ -6,6 +6,27 @@ from tkinter import filedialog
 import db
 from columns import Columns, COLUMNS
 
+SUBJECTS = sorted([
+    "Українська мова",
+    "Українська література"
+    "Зарубіжна література",
+    "Історія України",
+    "Всесвітня історія"
+    "Іноземна мова",
+    "Алгебра",
+    "Геометрія",
+    "Фізика",
+    "Біологія",
+    "Хімія",
+    "Географія",
+    "Основи правознавства",
+    "Основи здоров'я",
+    "Мистецтво",
+    "Інформатика",
+    "Технології",
+    "Фіична культура",
+])
+
 def select_db_gui() -> str:
     filename = "foobar.db"
     def q() -> str:
@@ -145,11 +166,6 @@ def marks_gui(con: db.Con, table: ttk.Treeview) -> None:
         ("date", "Дата"),
         ("mark", "Оцінка"),
     ])
-    SUBJECTS = [
-        "Математика",
-        "Українська мова",
-        "Історія України",
-    ]
 
     pupil = { "id": table.item(focus)["text"] } | table.set(focus)
 

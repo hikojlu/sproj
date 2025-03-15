@@ -8,10 +8,10 @@ from columns import Columns, COLUMNS
 
 SUBJECTS = sorted([
     "Українська мова",
-    "Українська література"
+    "Українська література",
     "Зарубіжна література",
     "Історія України",
-    "Всесвітня історія"
+    "Всесвітня історія",
     "Іноземна мова",
     "Алгебра",
     "Геометрія",
@@ -214,4 +214,12 @@ def marks_gui(con: db.Con, table: ttk.Treeview) -> None:
     
     gui.mainloop()
 def rating_gui(con: db.Con) -> None:
-    ...
+    gui = tk.Tk()
+    gui.title("Успішність")
+    gui.geometry("1000x470")
+    gui.resizable(False, False)
+
+    ttk.Treeview(gui, columns=())
+
+    gui.mainloop()
+

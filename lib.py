@@ -76,8 +76,9 @@ def edit_pupil(con: db.Con, table: ttk.Treeview, delete: bool) -> None:
         con.delete_val("pupils", "id", table.item(focus)['text'])
         con.delete_val("marks", "id", table.item(focus)['text'])
     else:
+        ...
         #con.update_val("pupils", table.item(focus)['text'], ("name","surname", "last_name","id"),("ві","ав",5))
-        update_root_gui(con, table)    
+    update_root_gui(con, table)    
 def delete_mark(con: db.Con, table: ttk.Treeview) -> None:
     focus = table.focus()
     

@@ -7,6 +7,12 @@ root.geometry("1000x500")
 root.title("БД учнів")
 
 pupils_table = ttk.Treeview(root, columns=COLUMNS.left[1:])
+for i, (col, display) in enumerate(COLUMNS.all):
+    pupils_table.heading(
+        "#0" if i == 0 else col,
+        text=display,
+    )
+    
 load_main_gui(CON, pupils_table)
 
 add_button = tk.Button(root, text="Додати учня", command=lambda: add_pupil_gui(CON, pupils_table))

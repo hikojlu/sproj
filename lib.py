@@ -27,14 +27,8 @@ SUBJECTS = sorted([
     "Фізична культура",
 ])
 
-def load_main_gui(CON, pupils_table: ttk.Treeview):
+def update_gui(CON, pupils_table: ttk.Treeview):
     pupils_table.delete(*pupils_table.get_children())
-    
-    for i, (col, display) in enumerate(COLUMNS.all):
-        pupils_table.heading(
-            "#0" if i == 0 else col,
-            text=display,
-        )
 
     for pupil in CON.get_pupils():
         pupils_table.insert(
@@ -104,7 +98,7 @@ def add_pupil_gui(con: db.Con, table: ttk.Treeview) -> None:
                 return None
 
         con.add_pupil(Columns(inputs))
-        load_main_gui(con,table)
+        update_gui(con,table)
         exit()
 
     def exit() -> None:
@@ -355,7 +349,7 @@ def edit_pupil(con: db.Con, table: ttk.Treeview, delete: bool) -> None:
         con.delete_val("marks", "id", table.item(focus)['text'])
     else:
         #con.update_val("pupils", table.item(focus)['text'], ("name","surname", "last_name","id"),("ві","ав",5))
-        load_main_gui(con, table)
+        update_gui(con, table)
     
 def delete_mark(con: db.Con, table: ttk.Treeview) -> None:
     focus = table.focus()

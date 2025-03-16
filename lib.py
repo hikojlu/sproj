@@ -253,11 +253,11 @@ def rating_gui(con: db.Con) -> None:
         data: [(int, str, int)] = []
         for id in con.get_all_ids():
             marks = con.get_marks(id, subject).right
+            name = " ".join(con.get_name(id))
             try:
                 avg = sum(marks) / len(marks)
             except ZeroDivisionError:
                 continue
-            name = " ".join(con.get_name(id))
             data.append((id, name, avg))
 
         if sort:

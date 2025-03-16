@@ -303,3 +303,4 @@ def rating_gui(con: db.Con) -> None:
     sort_cb.place(relx=0.02, rely=0.8, relwidth=0.2, relheight=0.1)
 
     gui.mainloop()
+    

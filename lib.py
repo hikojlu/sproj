@@ -133,7 +133,7 @@ def add_pupil_gui(con: db.Con, table: ttk.Treeview) -> None:
     
     gui.mainloop()
     
-def add_pupil_gui(con: db.Con, table: ttk.Treeviewб changeMode: bool) -> None:
+def add_pupil_gui(con: db.Con, table: ttk.Treeview, changeMode: bool) -> None:
     def save() -> None:
         cyrillic = set("йцукенгшщзхїфівапролджєячсмитьбюЙЦУКЕНГШЩЗХЇФІВАПРОЛДЖЄЯЧСМИТЬБЮ-")
         inputs_tests = [

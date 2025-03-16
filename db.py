@@ -51,11 +51,7 @@ class Con:
     def get_name(self, id: int) -> str:
         return (self.con.cursor().execute("SELECT surname, name, last_name FROM pupils WHERE id = ?", (id,)).fetchall()[0])
     
-    def delete_val(self, tableName: str, id_name: str, val_name: str) -> None:
-        self.con.cursor().execute(f"DELETE FROM {tableName} WHERE {id_name}= {val_name}")
-        self.con.commit()
-    def update_val(self, tableName: str, specifier: int | str, ids: tuple, values: tuple) -> None:
-        com = ", ".join([f"{i} = ?" for i in ids])
-        print(com)
-        self.con.cursor().execute(f"UPDATE {tableName} SET {com} WHERE id = {specifier}", values)
+    def delete_pupil(self, id: int) -> None:
+        self.con.cursor().execute(f"DELETE FROM pupils WHERE id = ?", (id,))
+        self.con.cursor().execute(f"DELETE FROM marks WHERE id = ?", (id,))
         self.con.commit()

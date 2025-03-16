@@ -34,12 +34,17 @@ def update_root_gui(con, table: ttk.Treeview):
         table.insert(
             parent="",
             index=tk.END,
+            id=id,
             text=id,
             value=values
         )
 
 def root_gui(con: db.Con):
-
+    def delete_pupil(con: db.Con, table: ttk.Treeview) -> None:
+        focus = table.focus()
+        if not focus: return None
+        con.delete_pupil(focus)
+        update_root_gui(con,table)
     root = tk.Tk()
     root.geometry("1000x500")
     root.title("БД учнів")
@@ -56,37 +61,14 @@ def root_gui(con: db.Con):
     add_button = tk.Button(root, text="Додати учня", command=lambda: add_pupil_gui(con, pupils_table))
     marks_button = tk.Button(root, text="Оцінки", command=lambda: marks_gui(con, pupils_table))
     rating_button = tk.Button(root, text="Успішність", command=lambda: rating_gui(con))
-    delete_button = tk.Button(root, text="Видалити", command = lambda: edit_pupil(con, pupils_table, True))
-    update_button = tk.Button(root, text="Змінити", command = lambda: edit_pupil(con, pupils_table, False))
-    
+    delete_button = tk.Button(root, text="Видалити", command = lambda: delete_pupil(con, pupils_table))
     pupils_table.place(relx=0.25, rely=0.05, relwidth=0.7, relheight=0.8)
     add_button.place(relx=0.02, rely=0.1, relwidth=0.21, relheight=0.1)
-    marks_button.place(relx=0.02, rely=0.25, relwidth=0.21, relheight=0.1)
-    rating_button.place(relx=0.02, rely=0.4, relwidth=0.21, relheight=0.1)
-    delete_button.place(relx=0.84, rely=0.88, relwidth=0.11, relheight=0.05)
-    update_button.place(relx=0.7, rely=0.88, relwidth=0.11, relheight=0.05)
+    marks_button.place(relx=0.02, rely=0.4, relwidth=0.21, relheight=0.1)
+    rating_button.place(relx=0.02, rely=0.55, relwidth=0.21, relheight=0.1)
+    delete_button.place(relx=0.02, rely=0.25, relwidth=0.21, relheight=0.1)
 
     root.mainloop()
-#IDK
-def edit_pupil(con: db.Con, table: ttk.Treeview, delete: bool) -> None:
-    focus = table.focus()
-    
-    if not focus: return None
-    if delete:
-        con.delete_val("pupils", "id", table.item(focus)['text'])
-        con.delete_val("marks", "id", table.item(focus)['text'])
-    else:
-        ...
-        #con.update_val("pupils", table.item(focus)['text'], ("name","surname", "last_name","id"),("ві","ав",5))
-    update_root_gui(con, table)    
-def delete_mark(con: db.Con, table: ttk.Treeview) -> None:
-    focus = table.focus()
-    
-    if not focus: return None
-    print(table.item(focus)['text'])
-    con.delete_val("marks", "id", table.item(focus)['text'])
-#/IDK
-
 def select_db_gui() -> str:
     filename = "foobar.db"
     def q() -> str:
@@ -249,7 +231,6 @@ def marks_gui(con: db.Con, table: ttk.Treeview) -> None:
 
     add_marks_button = tk.Button(gui, text="Додати", 
         command=lambda: save(Columns([(date_entry.get(), mark_entry.get())])), state="disabled")
-    delete_mark_button = tk.Button(gui, text="Видалити", command=lambda: delete_mark(con, table))
 
     gen_label.place(relx=0.3, rely=0.05, relwidth=0.3, relheight=0.2)
     date_label.place(relx=0.3, rely=0.3, relwidth=0.14, relheight=0.1)
@@ -257,7 +238,6 @@ def marks_gui(con: db.Con, table: ttk.Treeview) -> None:
     mark_label.place(relx=0.3, rely=0.42, relwidth=0.14, relheight=0.1)
     mark_entry.place(relx=0.45, rely=0.42, relwidth=0.14, relheight=0.1)
     add_marks_button.place(relx=0.3, rely=0.53, relwidth=0.3, relheight=0.1)
-    delete_mark_button.place(relx=0.35,rely=0.65,relwidth=0.25,relheight=0.09)
 
     marks.place(relx=0.7, rely=0.05, relwidth=0.25, relheight=0.75)
     done_button.place(relx=0.75, rely=0.82, relwidth=0.2, relheight=0.1)

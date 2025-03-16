@@ -27,17 +27,18 @@ SUBJECTS = sorted([
     "Фізична культура",
 ])
 
-def root_gui(con: db.Con):
-    def update_gui(con, pupils_table: ttk.Treeview):
-        pupils_table.delete(*pupils_table.get_children())
+def update_root_gui(con, table: ttk.Treeview):
+    table.delete(*table.get_children())
 
-        for id, *values in map((lambda x: x.right), con.get_pupils()):
-            pupils_table.insert(
-                parent="",
-                index=tk.END,
-                text=id,
-                value=values
-            )
+    for id, *values in map((lambda x: x.right), con.get_pupils()):
+        table.insert(
+            parent="",
+            index=tk.END,
+            text=id,
+            value=values
+        )
+
+def root_gui(con: db.Con):
 
     root = tk.Tk()
     root.geometry("1000x500")
@@ -50,7 +51,7 @@ def root_gui(con: db.Con):
             text=display,
         )
 
-    update_gui(con, pupils_table)
+    update_root_gui(con, pupils_table)
 
     add_button = tk.Button(root, text="Додати учня", command=lambda: add_pupil_gui(con, pupils_table))
     marks_button = tk.Button(root, text="Оцінки", command=lambda: marks_gui(con, pupils_table))
@@ -76,7 +77,7 @@ def edit_pupil(con: db.Con, table: ttk.Treeview, delete: bool) -> None:
         con.delete_val("marks", "id", table.item(focus)['text'])
     else:
         #con.update_val("pupils", table.item(focus)['text'], ("name","surname", "last_name","id"),("ві","ав",5))
-        update_gui(con, table)    
+        update_root_gui(con, table)    
 def delete_mark(con: db.Con, table: ttk.Treeview) -> None:
     focus = table.focus()
     
@@ -145,7 +146,7 @@ def add_pupil_gui(con: db.Con, table: ttk.Treeview) -> None:
                 return None
 
         con.add_pupil(Columns(inputs))
-        update_gui(con, table)
+        update_root_gui(con, table)
         exit()
 
     def exit() -> None:

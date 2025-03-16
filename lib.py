@@ -27,16 +27,33 @@ SUBJECTS = sorted([
     "Фізична культура",
 ])
 
-def update_gui(CON, pupils_table: ttk.Treeview):
+def update_gui(con, pupils_table: ttk.Treeview):
     pupils_table.delete(*pupils_table.get_children())
 
-    for pupil in CON.get_pupils():
+    for id, values in map((lambda x: x.right), con.get_pupils()):
         pupils_table.insert(
             parent="",
             index=tk.END,
-            text=pupil.right[0],
-            value=pupil.right[1:]
+            text=id,
+            value=values
         )
+def edit_pupil(con: db.Con, table: ttk.Treeview, delete: bool) -> None:
+    focus = table.focus()
+    
+    if not focus: return None
+    if delete:
+        con.delete_val("pupils", "id", table.item(focus)['text'])
+        con.delete_val("marks", "id", table.item(focus)['text'])
+    else:
+        #con.update_val("pupils", table.item(focus)['text'], ("name","surname", "last_name","id"),("ві","ав",5))
+        update_gui(con, table)    
+def delete_mark(con: db.Con, table: ttk.Treeview) -> None:
+    focus = table.focus()
+    
+    if not focus: return None
+    print(table.item(focus)['text'])
+    con.delete_val("marks", "id", table.item(focus)['text'])
+    
 
 def select_db_gui() -> str:
     filename = "foobar.db"
@@ -98,7 +115,7 @@ def add_pupil_gui(con: db.Con, table: ttk.Treeview) -> None:
                 return None
 
         con.add_pupil(Columns(inputs))
-        update_gui(con,table)
+        update_gui(con, table)
         exit()
 
     def exit() -> None:
@@ -127,70 +144,6 @@ def add_pupil_gui(con: db.Con, table: ttk.Treeview) -> None:
     
     gui.mainloop()
     
-def add_pupil_gui(con: db.Con, table: ttk.Treeview, changeMode: bool) -> None:
-    def save() -> None:
-        cyrillic = set("йцукенгшщзхїфівапролджєячсмитьбюЙЦУКЕНГШЩЗХЇФІВАПРОЛДЖЄЯЧСМИТЬБЮ-")
-        inputs_tests = [
-            ( "Уведіть існуючий, доступний, коректний номер",
-                lambda id:
-                    id.isdigit()
-                    and con.id_is_unique(int(id))
-            ),    
-            ( "Неможливо прочитати прізвище",
-                lambda surname:
-                    surname 
-                    and set(surname).issubset(cyrillic)
-            ),
-            ( "Неможливо прочитати ім'я",
-                lambda name:
-                    name
-                    and set(name).issubset(cyrillic) 
-            ),
-            ( "Неможливо прочитати ім'я по батькові",
-                lambda last_name:
-                    last_name
-                    and set(last_name).issubset(cyrillic)
-            ),
-        ]
-
-        inputs = [(col, e.get().strip()) for col, e in entries]
-
-        for (err_msg, valid), (col, _input) in zip(inputs_tests, inputs):
-            if not valid(_input):
-                messagebox.showerror(f"Помикла у `{col}`", err_msg)
-                return None
-
-        con.update_val("pupils", table.item(focus)['text'], ("name","surname", "last_name","id"),("ві","ав",5))
-        exit()
-
-    def exit() -> None:
-        gui.destroy()
-            
-    gui = tk.Tk()
-    gui.title("Додати учня у таблицю")
-    gui.geometry("250x300")
-    gui.resizable(False, False)
-
-    entries: list[(str, tk.Entry)] = []
-    for place_mod, (col, display) in enumerate(COLUMNS.all, 1):
-        col_label = tk.Label(gui, text=display)
-        entry = tk.Entry(gui)
-
-        col_label.place(relx=0.05, rely=0.14 * place_mod, relwidth=0.3, relheight=0.1)
-        entry.place(relx=0.35, rely=0.14 * place_mod, relwidth=0.6, relheight=0.1)
-
-        entries.append((col, entry))
-
-    done_button = tk.Button(gui, text="Додати", command=save)
-    cancel_button = tk.Button(gui, text="Відмінити", command=exit)
-
-    done_button.place(relx=0.55, rely=0.75, relwidth=0.35, relheight=0.15)
-    cancel_button.place(relx=0.1, rely=0.75, relwidth=0.35, relheight=0.15)
-
-    if changeMode:
-        gui.title("Змінити дані учня у таблиці")
-        
-    gui.mainloop()
 def marks_gui(con: db.Con, table: ttk.Treeview) -> None:
     CURSUBJECT = None
     def choose(subject: str):
@@ -339,22 +292,3 @@ def rating_gui(con: db.Con) -> None:
     sort_cb.place(relx=0.02, rely=0.8, relwidth=0.2, relheight=0.1)
 
     gui.mainloop()
-
-def edit_pupil(con: db.Con, table: ttk.Treeview, delete: bool) -> None:
-    focus = table.focus()
-    
-    if not focus: return None
-    if delete:
-        con.delete_val("pupils", "id", table.item(focus)['text'])
-        con.delete_val("marks", "id", table.item(focus)['text'])
-    else:
-        #con.update_val("pupils", table.item(focus)['text'], ("name","surname", "last_name","id"),("ві","ав",5))
-        update_gui(con, table)
-    
-def delete_mark(con: db.Con, table: ttk.Treeview) -> None:
-    focus = table.focus()
-    
-    if not focus: return None
-    print(table.item(focus)['text'])
-    con.delete_val("marks", "id", table.item(focus)['text'])
-    

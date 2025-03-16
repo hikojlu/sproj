@@ -12,8 +12,8 @@ for i, (col, display) in enumerate(COLUMNS.all):
         "#0" if i == 0 else col,
         text=display,
     )
-    
-load_main_gui(CON, pupils_table)
+
+update_gui(CON, pupils_table)
 
 add_button = tk.Button(root, text="Додати учня", command=lambda: add_pupil_gui(CON, pupils_table))
 marks_button = tk.Button(root, text="Оцінки", command=lambda: marks_gui(CON, pupils_table))

@@ -158,49 +158,46 @@ def add_pupil_gui(con: db.Con, table: ttk.Treeview) -> None:
     
     gui.mainloop()
 def marks_gui(con: db.Con, table: ttk.Treeview) -> None:
-    CURSUBJECT = None
-    def choose(subject: str):
-        nonlocal CURSUBJECT
-        CURSUBJECT = subject
-        def load_subject(subject: str) -> None:
-            marks.delete(*marks.get_children())
-
-            data = con.get_marks(int(pupil["id"]), subject)
-            for date, mark in data.all:
-                marks.insert(
-                    parent="",
-                    index=tk.END,
-                    text=date,
-                    values=(mark,)
-                )
-        def _choose(subject: str) -> None:
-            add_marks_button.config(state="normal")
-            gen_label.config(text=f"Оцінки учня\n{pupil["surname"]} {pupil["name"]} {pupil["last_name"]}\nз {subject}")
-            gui.title(f"Оцінки учня {pupil["surname"]} {pupil["name"]} {pupil["last_name"]} з {subject}")
-        load_subject(subject)
-        _choose(subject)
-    def save(data: Columns) -> None:
-        con.add_mark(pupil["id"], CURSUBJECT, data.left[0], data.right[0])
-        for date, mark in data.all:
-                marks.insert(
-                    parent="",
-                    index=tk.END,
-                    text=date,
-                    values=(mark,)
-                )     
-    def exit() -> None:
-        gui.destroy()
-
     focus = table.focus()
     if not focus:
         return None
+    
+    pupil = { "id": table.item(focus)["text"] } | table.set(focus)
+
+    CURSUBJECT = None
 
     MARKS_COLUMNS = Columns([
         ("date", "Дата"),
         ("mark", "Оцінка"),
     ])
 
-    pupil = { "id": table.item(focus)["text"] } | table.set(focus)
+    def choose(subject: str):
+        nonlocal CURSUBJECT
+        CURSUBJECT = subject
+        update_gui()
+    def update_gui() -> None:
+        nonlocal CURSUBJECT
+        subject = CURSUBJECT
+
+        add_marks_button.config(state="normal")
+        gen_label.config(text=f"Оцінки учня\n{pupil["surname"]} {pupil["name"]} {pupil["last_name"]}\nз {subject}")
+        gui.title(f"Оцінки учня {pupil["surname"]} {pupil["name"]} {pupil["last_name"]} з {subject}")
+
+        marks.delete(*marks.get_children())
+
+        data = con.get_marks(int(pupil["id"]), subject)
+        for date, mark in data.all:
+            marks.insert(
+                parent="",
+                index=tk.END,
+                text=date,
+                values=(mark,)
+            )
+    def save(data: Columns) -> None:
+        con.add_mark(pupil["id"], CURSUBJECT, data.left[0], data.right[0])
+        update_gui()
+    def exit() -> None:
+        gui.destroy()
 
     gui = tk.Tk()
     gui.title(f"Оцінки учня {pupil["surname"]} {pupil["name"]} {pupil["last_name"]} з <предмет не обрано>")
@@ -229,7 +226,7 @@ def marks_gui(con: db.Con, table: ttk.Treeview) -> None:
     date_entry = tk.Entry(gui)
     mark_entry = tk.Entry(gui)
 
-    add_marks_button = tk.Button(gui, text="Додати", 
+    add_marks_button = tk.Button(gui, text="Додати таку оцінку", 
         command=lambda: save(Columns([(date_entry.get(), mark_entry.get())])), state="disabled")
 
     gen_label.place(relx=0.3, rely=0.05, relwidth=0.3, relheight=0.2)

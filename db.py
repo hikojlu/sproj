@@ -55,3 +55,6 @@ class Con:
         self.con.cursor().execute(f"DELETE FROM pupils WHERE id = ?", (id,))
         self.con.cursor().execute(f"DELETE FROM marks WHERE id = ?", (id,))
         self.con.commit()
+    def delete_mark(self, pupil_id: int, subject: str, date: str, mark: int) -> None:
+        self.con.cursor().execute("DELETE FROM marks WHERE id = ? AND subject = ? AND date = ? AND mark = ?", (pupil_id, subject, date, mark))
+        self.con.commit()

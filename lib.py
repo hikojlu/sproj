@@ -179,7 +179,11 @@ def marks_gui(con: db.Con, table: ttk.Treeview) -> None:
         nonlocal CURSUBJECT
         subject = CURSUBJECT
 
-        add_marks_button.config(state="normal")
+        if not subject:
+            return None
+
+        add_mark_button.config(state="normal")
+        delete_mark_button.config(state="normal")
         gen_label.config(text=f"Оцінки учня\n{pupil["surname"]} {pupil["name"]} {pupil["last_name"]}\nз {subject}")
         gui.title(f"Оцінки учня {pupil["surname"]} {pupil["name"]} {pupil["last_name"]} з {subject}")
 
@@ -196,6 +200,9 @@ def marks_gui(con: db.Con, table: ttk.Treeview) -> None:
     def save(date, mark) -> None:
         con.add_mark(pupil["id"], CURSUBJECT, date, mark)
         update_gui()
+    def delete(date, mark) -> None:
+        con.delete_mark(int(pupil["id"]), CURSUBJECT, date, mark)
+        update_gui()
     def exit() -> None:
         gui.destroy()
 
@@ -210,37 +217,43 @@ def marks_gui(con: db.Con, table: ttk.Treeview) -> None:
             "#0" if i == 0 else col,
             text=display,
         )
-
-    done_button = tk.Button(gui, text="Завершити", command=exit)
+    marks.place(relx=0.7, rely=0.05, relwidth=0.25, relheight=0.75)
     
     subject_listbox = tk.Listbox(gui, selectmode="single")
     subject_listbox.insert(tk.END, *SUBJECTS)
+    subject_listbox.place(relx=0.05, rely=0.05, relwidth=0.2, relheight=0.75)
+
     load_subject_button = tk.Button(gui, text="Обрати", 
         command=lambda: choose(SUBJECTS[subject_listbox.curselection()[0]]))
+    load_subject_button.place(relx=0.05, rely=0.82, relwidth=0.2, relheight=0.1)
     
-    gen_label = tk.Label(gui, text=f"Додати оцінки для:\n{pupil["surname"]} {pupil["name"]} {pupil["last_name"]}")
-
-    date_label = tk.Label(gui, text="Дата")
-    mark_label = tk.Label(gui, text="Оцінка")
+    gen_label = tk.Label(gui, 
+        text=f"Додати оцінки для:\n{pupil["surname"]} {pupil["name"]} {pupil["last_name"]}"
+    )
+    gen_label.place(relx=0.3, rely=0.05, relwidth=0.3, relheight=0.2)
+    
+    tk.Label(gui, text="Дата").place(relx=0.3, rely=0.3, relwidth=0.14, relheight=0.1)
+    tk.Label(gui, text="Оцінка").place(relx=0.3, rely=0.42, relwidth=0.14, relheight=0.1)
 
     date_entry = tk.Entry(gui)
-    mark_entry = tk.Entry(gui)
-
-    add_marks_button = tk.Button(gui, text="Додати таку оцінку", 
-        command=lambda: save(date_entry.get(), mark_entry.get()), state="disabled")
-
-    gen_label.place(relx=0.3, rely=0.05, relwidth=0.3, relheight=0.2)
-    date_label.place(relx=0.3, rely=0.3, relwidth=0.14, relheight=0.1)
     date_entry.place(relx=0.45, rely=0.3, relwidth=0.14, relheight=0.1)
-    mark_label.place(relx=0.3, rely=0.42, relwidth=0.14, relheight=0.1)
+
+    mark_entry = tk.Entry(gui)
     mark_entry.place(relx=0.45, rely=0.42, relwidth=0.14, relheight=0.1)
-    add_marks_button.place(relx=0.3, rely=0.53, relwidth=0.3, relheight=0.1)
 
-    marks.place(relx=0.7, rely=0.05, relwidth=0.25, relheight=0.75)
-    done_button.place(relx=0.75, rely=0.82, relwidth=0.2, relheight=0.1)
+    add_mark_button = tk.Button(gui, text="Додати таку оцінку", 
+        command=lambda: save(date_entry.get(), mark_entry.get()), 
+        state="disabled"
+    )
+    add_mark_button.place(relx=0.3, rely=0.53, relwidth=0.3, relheight=0.1)
+    delete_mark_button = tk.Button(gui, text="Видалити оцінку", 
+        command=lambda: delete(date_entry.get(), mark_entry.get()), 
+        state="disabled"
+    )
+    delete_mark_button.place(relx=0.3, rely=0.65, relwidth=0.3, relheight=0.1)
+    
 
-    subject_listbox.place(relx=0.05, rely=0.05, relwidth=0.2, relheight=0.75)
-    load_subject_button.place(relx=0.05, rely=0.82, relwidth=0.2, relheight=0.1)
+    tk.Button(gui, text="Завершити", command=exit).place(relx=0.75, rely=0.82, relwidth=0.2, relheight=0.1)
     
     gui.mainloop()
 

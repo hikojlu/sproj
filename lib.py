@@ -45,6 +45,8 @@ def root_gui(con: db.Con):
         if not focus: return None
         con.delete_pupil(focus)
         update_root_gui(con,table)
+    def edit_pupil(con: db.Con, table: ttk.Treeview) -> None:
+        focus = table.focus()
     root = tk.Tk()
     root.geometry("1000x500")
     root.title("БД учнів")
@@ -61,7 +63,7 @@ def root_gui(con: db.Con):
     add_button = tk.Button(root, text="Додати учня", command=lambda: add_pupil_gui(con, pupils_table))
     marks_button = tk.Button(root, text="Оцінки", command=lambda: marks_gui(con, pupils_table))
     rating_button = tk.Button(root, text="Успішність", command=lambda: rating_gui(con))
-    delete_button = tk.Button(root, text="Видалити", command = lambda: delete_pupil(con, pupils_table))
+    delete_button = tk.Button(root, text="Видалити учня", command = lambda: delete_pupil(con, pupils_table))
     pupils_table.place(relx=0.25, rely=0.05, relwidth=0.7, relheight=0.8)
     add_button.place(relx=0.02, rely=0.1, relwidth=0.21, relheight=0.1)
     marks_button.place(relx=0.02, rely=0.4, relwidth=0.21, relheight=0.1)
@@ -99,7 +101,7 @@ def add_pupil_gui(con: db.Con, table: ttk.Treeview) -> None:
     def save() -> None:
         cyrillic = set("йцукенгшщзхїфівапролджєячсмитьбюЙЦУКЕНГШЩЗХЇФІВАПРОЛДЖЄЯЧСМИТЬБЮ-")
         inputs_tests = [
-            ( "Уведіть існуючий, доступний, коректний номер",
+            ( "Некоректний номер учня",
                 lambda id:
                     id.isdigit()
                     and con.id_is_unique(int(id))
@@ -121,16 +123,24 @@ def add_pupil_gui(con: db.Con, table: ttk.Treeview) -> None:
             ),
         ]
 
-        inputs = [(col, e.get().strip()) for col, e in entries]
+        inputs = Columns([(col, e.get().strip()) for col, e in entries])
 
-        for (err_msg, valid), (col, _input) in zip(inputs_tests, inputs):
+        q: bool = False
+        for (err_msg, valid), (col, _input) in zip(inputs_tests, inputs.all):
             if not valid(_input):
-                messagebox.showerror(f"Помикла у `{col}`", err_msg)
-                return None
-
-        con.add_pupil(Columns(inputs))
+                if err_msg == "Некоректний номер учня" and _input.isdigit():
+                    q = messagebox.askyesno("Учень з таким номером уже існує", "Учень з таким номером уже існує, замінити його?")
+                else:
+                    messagebox.showerror(f"Помилка у `{col}`", err_msg)
+                    return None
+        if q:
+            con.update_pupil(inputs.right[0], inputs.right[1:])
+        else:
+            con.add_pupil(inputs)
         update_root_gui(con, table)
-        exit()
+
+        for _, e in entries:
+            e.delete(0, 'end')
 
     def exit() -> None:
         gui.destroy()
@@ -176,7 +186,6 @@ def marks_gui(con: db.Con, table: ttk.Treeview) -> None:
         CURSUBJECT = subject
         update_gui()
     def update_gui() -> None:
-        nonlocal CURSUBJECT
         subject = CURSUBJECT
 
         if not subject:
@@ -217,15 +226,12 @@ def marks_gui(con: db.Con, table: ttk.Treeview) -> None:
             "#0" if i == 0 else col,
             text=display,
         )
-    marks.place(relx=0.7, rely=0.05, relwidth=0.25, relheight=0.75)
+    marks.place(relx=0.7, rely=0.05, relwidth=0.25, relheight=0.9)
     
-    subject_listbox = tk.Listbox(gui, selectmode="single")
+    subject_listbox = tk.Listbox(gui, selectmode="single",)
     subject_listbox.insert(tk.END, *SUBJECTS)
-    subject_listbox.place(relx=0.05, rely=0.05, relwidth=0.2, relheight=0.75)
-
-    load_subject_button = tk.Button(gui, text="Обрати", 
-        command=lambda: choose(SUBJECTS[subject_listbox.curselection()[0]]))
-    load_subject_button.place(relx=0.05, rely=0.82, relwidth=0.2, relheight=0.1)
+    subject_listbox.bind("<<ListboxSelect>>", lambda _: choose(SUBJECTS[subject_listbox.curselection()[0]]))
+    subject_listbox.place(relx=0.05, rely=0.05, relwidth=0.2, relheight=0.9)
     
     gen_label = tk.Label(gui, 
         text=f"Додати оцінки для:\n{pupil["surname"]} {pupil["name"]} {pupil["last_name"]}"
@@ -251,9 +257,6 @@ def marks_gui(con: db.Con, table: ttk.Treeview) -> None:
         state="disabled"
     )
     delete_mark_button.place(relx=0.3, rely=0.65, relwidth=0.3, relheight=0.1)
-    
-
-    tk.Button(gui, text="Завершити", command=exit).place(relx=0.75, rely=0.82, relwidth=0.2, relheight=0.1)
     
     gui.mainloop()
 

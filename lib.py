@@ -1,5 +1,6 @@
 import os
 import tkinter as tk
+from datetime import datetime
 from tkinter import ttk
 from tkinter import messagebox
 from tkinter import filedialog
@@ -207,7 +208,24 @@ def marks_gui(con: db.Con, table: ttk.Treeview) -> None:
                 values=(mark,)
             )
     def save(date, mark) -> None:
-        con.add_mark(pupil["id"], CURSUBJECT, date, mark)
+        #erm !somewhat works but ugly
+        test = mark.isdigit() and 1 <= int(mark) <= 12
+        if not test:
+            messagebox.showerror("Помилка оцінки", "Введіть правильну оцінку між 1 та 12")
+            return None
+        test = test and len(date.split(".")) == 2 and all(list(map(lambda x: x.isdigit(), date.split("."))))
+        test = test and 1 <= int(date.split(".")[0]) <= 31
+        test = test and 1 <= int(date.split(".")[1]) <= 12
+        if not test:
+            messagebox.showerror("Помилка дати", "Введіть правильну дату")
+            return None
+        #/erm
+
+        if con.mark_is_unique_today(pupil["id"], CURSUBJECT, date):
+            con.add_mark(pupil["id"], CURSUBJECT, date, mark)
+        else:
+            if messagebox.askyesno("Оцінка за цей день уже є", f"Оцінка за {date} з {CURSUBJECT} у {pupil["surname"]} {pupil["name"]} {pupil["last_name"]} уже є, змінити її?"):
+                con.update_mark(pupil["id"], CURSUBJECT, date, mark)
         update_gui()
     def delete(date, mark) -> None:
         con.delete_mark(int(pupil["id"]), CURSUBJECT, date, mark)
@@ -226,7 +244,7 @@ def marks_gui(con: db.Con, table: ttk.Treeview) -> None:
             "#0" if i == 0 else col,
             text=display,
         )
-    marks.place(relx=0.7, rely=0.05, relwidth=0.25, relheight=0.9)
+    marks.place(relx=0.6, rely=0.05, relwidth=0.35, relheight=0.9)
     
     subject_listbox = tk.Listbox(gui, selectmode="single",)
     subject_listbox.insert(tk.END, *SUBJECTS)
@@ -236,27 +254,29 @@ def marks_gui(con: db.Con, table: ttk.Treeview) -> None:
     gen_label = tk.Label(gui, 
         text=f"Додати оцінки для:\n{pupil["surname"]} {pupil["name"]} {pupil["last_name"]}"
     )
-    gen_label.place(relx=0.3, rely=0.05, relwidth=0.3, relheight=0.2)
+    gen_label.place(relx=0.28, rely=0.05, relwidth=0.3, relheight=0.2)
     
-    tk.Label(gui, text="Дата").place(relx=0.3, rely=0.3, relwidth=0.14, relheight=0.1)
-    tk.Label(gui, text="Оцінка").place(relx=0.3, rely=0.42, relwidth=0.14, relheight=0.1)
+    tk.Label(gui, text="Дата").place(relx=0.25, rely=0.3, relwidth=0.14, relheight=0.1)
+    tk.Label(gui, text="Оцінка").place(relx=0.25, rely=0.42, relwidth=0.14, relheight=0.1)
 
     date_entry = tk.Entry(gui)
-    date_entry.place(relx=0.45, rely=0.3, relwidth=0.14, relheight=0.1)
+    date_entry.place(relx=0.46, rely=0.3, relwidth=0.1, relheight=0.1)
+    date_entry.insert(0, datetime.today().strftime("%d.%m"))
 
     mark_entry = tk.Entry(gui)
-    mark_entry.place(relx=0.45, rely=0.42, relwidth=0.14, relheight=0.1)
+    mark_entry.place(relx=0.46, rely=0.42, relwidth=0.1, relheight=0.1)
+    mark_entry.insert(0, "12")
 
-    add_mark_button = tk.Button(gui, text="Додати таку оцінку", 
+    add_mark_button = tk.Button(gui, text="Поставити оцінку за цей день", 
         command=lambda: save(date_entry.get(), mark_entry.get()), 
         state="disabled"
     )
-    add_mark_button.place(relx=0.3, rely=0.53, relwidth=0.3, relheight=0.1)
-    delete_mark_button = tk.Button(gui, text="Видалити оцінку", 
+    add_mark_button.place(relx=0.28, rely=0.53, relwidth=0.3, relheight=0.1)
+    delete_mark_button = tk.Button(gui, text="Видалити оцінку за цей день", 
         command=lambda: delete(date_entry.get(), mark_entry.get()), 
         state="disabled"
     )
-    delete_mark_button.place(relx=0.3, rely=0.65, relwidth=0.3, relheight=0.1)
+    delete_mark_button.place(relx=0.28, rely=0.65, relwidth=0.3, relheight=0.1)
     
     gui.mainloop()
 

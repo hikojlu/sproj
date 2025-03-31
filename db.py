@@ -17,6 +17,13 @@ class Con:
         ids = self.con.cursor().execute("""SELECT id FROM pupils""").fetchall()
         ids = [int(e[0]) for e in ids]
         return not id in ids
+    def mark_is_unique_today(self, pupil_id: int, subject: str, date: str) -> bool:
+        s = self.con.cursor().execute(
+            """SELECT mark FROM marks WHERE id = ? AND subject = ? AND date = ?""",
+            (pupil_id, subject, date)
+        ).fetchall()
+        print(s)
+        return len(s) < 1
 
     def add_pupil(self, pupil: Columns) -> None:
         self.con.cursor().execute(
@@ -63,4 +70,9 @@ class Con:
         self.con.cursor().execute(
             "UPDATE pupils SET surname = ?, name = ?, last_name = ? WHERE id = ?", 
             new + [pupil_id]
+        )
+    def update_mark(self, pupild_id: int, subject: str, date: str, new: int) -> None:
+        self.con.cursor().execute(
+            "UPDATE marks SET mark = ? WHERE id = ? AND subject = ? AND date = ?",
+            (new, pupild_id, subject, date)
         )

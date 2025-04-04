@@ -7,6 +7,8 @@ from tkinter import filedialog
 import db
 from columns import Columns, COLUMNS
 
+#import mathplotlib.pyplotgui
+
 SUBJECTS = sorted([
     "Українська мова",
     "Українська література",
@@ -227,8 +229,8 @@ def marks_gui(con: db.Con, table: ttk.Treeview) -> None:
             if messagebox.askyesno("Оцінка за цей день уже є", f"Оцінка за {date} з {CURSUBJECT} у {pupil["surname"]} {pupil["name"]} {pupil["last_name"]} уже є, змінити її?"):
                 con.update_mark(pupil["id"], CURSUBJECT, date, mark)
         update_gui()
-    def delete(date, mark) -> None:
-        con.delete_mark(int(pupil["id"]), CURSUBJECT, date, mark)
+    def delete(date) -> None:
+        con.delete_mark(int(pupil["id"]), CURSUBJECT, date)
         update_gui()
     def exit() -> None:
         gui.destroy()
@@ -273,7 +275,7 @@ def marks_gui(con: db.Con, table: ttk.Treeview) -> None:
     )
     add_mark_button.place(relx=0.28, rely=0.53, relwidth=0.3, relheight=0.1)
     delete_mark_button = tk.Button(gui, text="Видалити оцінку за цей день", 
-        command=lambda: delete(date_entry.get(), mark_entry.get()), 
+        command=lambda: delete(date_entry.get()), 
         state="disabled"
     )
     delete_mark_button.place(relx=0.28, rely=0.65, relwidth=0.3, relheight=0.1)
@@ -281,9 +283,11 @@ def marks_gui(con: db.Con, table: ttk.Treeview) -> None:
     gui.mainloop()
 
 def rating_gui(con: db.Con) -> None:
-    def load(subject: str, sort: bool) -> None:
+    def _load(tofilter: bool = False):
+        load(SUBJECTS[subject_listbox.curselection()[0]], sort=sort_var.get(), filter=filter_entry.get() if tofilter else None)
+    def load(subject: str, sort: bool, filter: str) -> None:
         table.delete(*table.get_children())
-        data: [(int, str, int)] = []
+        data: [(int, str, int, str)] = []
         for id in con.get_all_ids():
             marks = con.get_marks(id, subject).right
             name = " ".join(con.get_name(id))
@@ -291,17 +295,26 @@ def rating_gui(con: db.Con) -> None:
                 avg = sum(marks) / len(marks)
             except ZeroDivisionError:
                 continue
-            data.append((id, name, avg))
-
+            levels = [
+                "Початковий",
+                "Середній",
+                "Достатній",
+                "Високий",
+            ]
+            level = levels[int((avg - 1) // 3)]
+            data.append((id, name, avg, level))
         if sort:
             data.sort(key=(lambda x: x[2]), reverse=True)
 
-        for id, name, mark in data:
+        if filter is not None:
+            data = [e for e in data if eval(f"{e[2]} {filter}")]
+
+        for id, name, mark, level in data:
             table.insert(
                 parent="",
                 index=tk.END,
                 text=id,
-                values=(name, f"{mark:.2f}")
+                values=(name, f"{mark:.2f}", level)
             )
 
     gui = tk.Tk()
@@ -312,7 +325,8 @@ def rating_gui(con: db.Con) -> None:
     columns = Columns([
         ("id", "№"),
         ("full_name", "Повне ім'я"),
-        ("avg", "Середня оцінка")
+        ("avg", "Середня оцінка"),
+        ("level", "Рівень досягнень"),
     ])
 
     table = ttk.Treeview(gui, columns=columns.left[1:])
@@ -327,13 +341,23 @@ def rating_gui(con: db.Con) -> None:
     subject_listbox.insert(tk.END, *SUBJECTS)
     subject_listbox.place(relx=0.02, rely=0.05, relwidth=0.2, relheight=0.6)
 
-    load_subject_button = tk.Button(gui, text="Обрати", 
-        command=lambda: load(SUBJECTS[subject_listbox.curselection()[0]], sort=sort_var.get()))
-    load_subject_button.place(relx=0.02, rely=0.66, relwidth=0.2, relheight=0.1)
+    filter_entry = tk.Entry(gui)
+    filter_entry.insert(0, "==10")
+    filter_entry.place(relx=0.02, rely=0.75, relwidth=0.15, relheight=0.07)
+
+    filter_button = tk.Button(gui, text="Фільтрувати", command=lambda: _load(True))
+    filter_button.place(relx=0.02, rely=0.85, relwidth=0.2, relheight=0.07)
+
+    hint_button = tk.Button(gui, text="?")
+    #hint_button.place() potom
+
+    subject_listbox.bind("<<ListboxSelect>>", lambda _: _load())
 
     sort_var = tk.IntVar(gui, value=0)
-    sort_cb = tk.Checkbutton(gui, text='Сортувати', variable=sort_var, onvalue=1, offvalue=0)
-    sort_cb.place(relx=0.02, rely=0.8, relwidth=0.2, relheight=0.1)
+    sort_cb = tk.Checkbutton(gui, text='Сортувати', variable=sort_var, onvalue=1, offvalue=0, 
+        command=lambda: _load()
+    )
+    sort_cb.place(relx=0.02, rely=0.65, relwidth=0.2, relheight=0.1)
 
     gui.mainloop()
     

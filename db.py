@@ -22,7 +22,6 @@ class Con:
             """SELECT mark FROM marks WHERE id = ? AND subject = ? AND date = ?""",
             (pupil_id, subject, date)
         ).fetchall()
-        print(s)
         return len(s) < 1
 
     def add_pupil(self, pupil: Columns) -> None:
@@ -62,8 +61,8 @@ class Con:
         self.con.cursor().execute(f"DELETE FROM pupils WHERE id = ?", (id,))
         self.con.cursor().execute(f"DELETE FROM marks WHERE id = ?", (id,))
         self.con.commit()
-    def delete_mark(self, pupil_id: int, subject: str, date: str, mark: int) -> None:
-        self.con.cursor().execute("DELETE FROM marks WHERE id = ? AND subject = ? AND date = ? AND mark = ?", (pupil_id, subject, date, mark))
+    def delete_mark(self, pupil_id: int, subject: str, date: str) -> None:
+        self.con.cursor().execute("DELETE FROM marks WHERE id = ? AND subject = ? AND date = ?", (pupil_id, subject, date))
         self.con.commit()
 
     def update_pupil(self, pupil_id: int, new: (str, str, str)) -> None:

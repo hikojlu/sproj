@@ -4,6 +4,7 @@ from datetime import datetime
 from tkinter import ttk
 from tkinter import messagebox
 from tkinter import filedialog
+import matplotlib.pyplot as plt
 import db
 from columns import Columns, COLUMNS
 
@@ -283,8 +284,13 @@ def marks_gui(con: db.Con, table: ttk.Treeview) -> None:
     gui.mainloop()
 
 def rating_gui(con: db.Con) -> None:
+    subj = None
     def _load(tofilter: bool = False):
-        load(SUBJECTS[subject_listbox.curselection()[0]], sort=sort_var.get(), filter=filter_entry.get() if tofilter else None)
+        nonlocal subj
+        try:
+            subj = subject_listbox.curselection()[0]
+        except: pass
+        load(SUBJECTS[subj], sort=sort_var.get(), filter=filter_entry.get() if tofilter else None)
     def load(subject: str, sort: bool, filter: str) -> None:
         table.delete(*table.get_children())
         data: [(int, str, int, str)] = []
@@ -309,13 +315,26 @@ def rating_gui(con: db.Con) -> None:
         if filter is not None:
             data = [e for e in data if eval(f"{e[2]} {filter}")]
 
+        names = []
+        _marks = []
         for id, name, mark, level in data:
+            names.append(name)
+            _marks.append(mark)
             table.insert(
                 parent="",
                 index=tk.END,
                 text=id,
                 values=(name, f"{mark:.2f}", level)
             )
+        plt.title(f"Успішність учнів з предмету: {subject}")
+        plt.bar(names, _marks)
+
+    def graphs():
+        plt.xlabel("Учні", color="gray")
+        plt.ylabel("Середня оцінка", color="gray")
+        plt.grid(True)
+        plt.show()
+
 
     gui = tk.Tk()
     gui.title("Успішність")
@@ -339,17 +358,17 @@ def rating_gui(con: db.Con) -> None:
 
     subject_listbox = tk.Listbox(gui, selectmode="single")
     subject_listbox.insert(tk.END, *SUBJECTS)
-    subject_listbox.place(relx=0.02, rely=0.05, relwidth=0.2, relheight=0.6)
+    subject_listbox.place(relx=0.02, rely=0.05, relwidth=0.2, relheight=0.4)
 
     filter_entry = tk.Entry(gui)
     filter_entry.insert(0, "==10")
-    filter_entry.place(relx=0.02, rely=0.75, relwidth=0.15, relheight=0.07)
+    filter_entry.place(relx=0.02, rely=0.55, relwidth=0.15, relheight=0.07)
 
     filter_button = tk.Button(gui, text="Фільтрувати", command=lambda: _load(True))
-    filter_button.place(relx=0.02, rely=0.85, relwidth=0.2, relheight=0.07)
+    filter_button.place(relx=0.02, rely=0.65, relwidth=0.2, relheight=0.07)
 
-    hint_button = tk.Button(gui, text="?")
-    #hint_button.place() potom
+    hint_button = tk.Button(gui, text="?", command=lambda: messagebox.showinfo("Фільтрування", "==N - відобразити учнів, середня оцінка яких дорівнює N\n<N - менше N\n>N - більше N\n!=N - не дорівнює N"))
+    hint_button.place(relx=0.18, rely=0.55, relwidth=0.035, relheight=0.07)
 
     subject_listbox.bind("<<ListboxSelect>>", lambda _: _load())
 
@@ -357,7 +376,10 @@ def rating_gui(con: db.Con) -> None:
     sort_cb = tk.Checkbutton(gui, text='Сортувати', variable=sort_var, onvalue=1, offvalue=0, 
         command=lambda: _load()
     )
-    sort_cb.place(relx=0.02, rely=0.65, relwidth=0.2, relheight=0.1)
+    sort_cb.place(relx=0.02, rely=0.45, relwidth=0.2, relheight=0.1)
+
+    graphs_button = tk.Button(gui, text="Графіки", command=graphs)
+    graphs_button.place(relx=0.02, rely=0.75, relwidth=0.2, relheight=0.07)
 
     gui.mainloop()
     

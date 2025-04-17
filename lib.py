@@ -318,7 +318,7 @@ def rating_gui(con: db.Con) -> None:
         names = []
         _marks = []
         for id, name, mark, level in data:
-            names.append(name)
+            names.append(name.replace(" ", "\n"))
             _marks.append(mark)
             table.insert(
                 parent="",
@@ -326,15 +326,18 @@ def rating_gui(con: db.Con) -> None:
                 text=id,
                 values=(name, f"{mark:.2f}", level)
             )
+        plt.clf()
         plt.title(f"Успішність учнів з предмету: {subject}")
         plt.bar(names, _marks)
+        for name, mark in zip(names, _marks):
+            plt.text(name, mark, str(mark), ha="center", va="bottom")
 
     def graphs():
         plt.xlabel("Учні", color="gray")
         plt.ylabel("Середня оцінка", color="gray")
         plt.grid(True)
-        plt.show()
-
+        plt.minorticks_on()
+        plt.show() 
 
     gui = tk.Tk()
     gui.title("Успішність")

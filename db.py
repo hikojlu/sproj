@@ -70,8 +70,10 @@ class Con:
             "UPDATE pupils SET surname = ?, name = ?, last_name = ? WHERE id = ?", 
             new + [pupil_id]
         )
+        self.con.commit()
     def update_mark(self, pupild_id: int, subject: str, date: str, new: int) -> None:
         self.con.cursor().execute(
             "UPDATE marks SET mark = ? WHERE id = ? AND subject = ? AND date = ?",
             (new, pupild_id, subject, date)
         )
+        self.con.commit()
